@@ -1,0 +1,48 @@
+# Themes & Appearance
+# For themes, icons, fonts, and other visual enhancements.
+catppuccin.catppuccin-vsc
+catppuccin.catppuccin-vsc-icons
+enkia.tokyo-night
+scottmckendry.cyberdream
+drcika.poimandres
+oderwat.indent-rainbow
+royaction.color-manager
+
+# Python
+# For Python language support, linting, formatting, and debugging.
+ms-python.python
+ms-python.vscode-pylance
+ms-python.debugpy
+charliermarsh.ruff
+njpwerner.autodocstring
+ms-python.vscode-python-envs
+
+# Formatting & Linting
+# For general-purpose formatters and linters.
+esbenp.prettier-vscode
+foxundermoon.shell-format
+
+# Remote Development
+# For remote development via SSH and containers.
+ms-vscode-remote.remote-ssh
+ms-vscode-remote.remote-containers
+ms-vscode.remote-explorer
+
+# Containers & Docker
+# For Docker and container development.
+docker.docker
+ms-azuretools.vscode-docker
+
+# Productivity & Tools
+# For general productivity tools and utilities.
+gruntfuggly.todo-tree
+usernamehw.errorlens
+
+# Language Support
+# For other language-specific support.
+shd101wyy.markdown-preview-enhanced
+tamasfe.even-better-toml
+
+# AI
+Google.google-antigravity
+ZooCodeOrganization.zoo-code

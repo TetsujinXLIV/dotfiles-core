@@ -1,0 +1,29 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor & IDE runtime / cache files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.bak
+
+# VS Code runtime data (only track User settings, keys, snippets, and extensions.list)
+vscode/.config/Code/*
+!vscode/.config/Code/User/
+vscode/.config/Code/User/*
+!vscode/.config/Code/User/settings.json
+!vscode/.config/Code/User/keybindings.json
+!vscode/.config/Code/User/snippets/
+!vscode/.config/Code/User/snippets/**
+
+# Node / temporary logs
+node_modules/
+*.log

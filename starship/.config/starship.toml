@@ -1,0 +1,279 @@
+# Sets user-defined palette
+palette = "tokyo_night_night"
+
+format = """
+[](blue)\
+$python\
+$username\
+$hostname\
+[](bg:lavender fg:blue)\
+$directory\
+[](fg:lavender bg:pink)\
+$git_branch\
+$git_status\
+[](fg:pink bg:green)\
+$time\
+[ ](fg:green)\
+"""
+command_timeout = 5000
+# Disable the blank line at the start of the prompt
+# add_newline = false
+
+# You can also replace your username with a neat symbol like  to save some space
+[username]
+show_always = true
+style_user = "bg:blue fg:surface0"
+style_root = "bg:blue fg:surface0"
+format = '[$user ]($style)'
+
+[hostname]
+ssh_only = true
+style = "bg:blue fg:surface0"
+format = '[$hostname ]($style)'
+
+[directory]
+style = "bg:lavender  fg:surface0"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+# Here is how you can shorten some long paths by text replacement
+# similar to mapped_locations in Oh My Posh:
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+# Keep in mind that the order matters. For example:
+# "Important Documents" = "  "
+# will not be replaced, because "Documents" was already substituted before.
+# So either put "Important Documents" before "Documents" or use the substituted version:
+# "Important  " = "  "
+
+[c]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[docker_context]
+symbol = " "
+style = "bg:sapphire"
+format = '[ $symbol $context ]($style) $path'
+
+[elixir]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[elm]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[git_branch]
+symbol = ""
+style = "bg:pink fg:surface0"
+format = '[ $symbol $branch ]($style)'
+
+[git_status]
+style = "bg:pink fg:surface0"
+format = '[$all_status$ahead_behind ]($style)'
+
+[golang]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[haskell]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[java]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[julia]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[nim]
+symbol = " "
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[python]
+style = "bg:blue fg:surface0"
+format = '[(\($virtualenv\) )]($style)'
+
+[rust]
+symbol = ""
+style = "bg:blue"
+format = '[ $symbol ($version) ]($style)'
+
+[time]
+disabled = false
+time_format = "%R"             # Hour:Minute Format
+style = "bg:green fg:surface0"
+format = '[ $time ]($style)'
+
+# palette tables should be last in the config ⚓️
+
+# ------------------------------------------------------------------------------
+# 1. Catppuccin Mocha (Baseline)
+# ------------------------------------------------------------------------------
+[palettes.catppuccin_mocha]
+surface0 = "#313244"
+surface = "#313244"
+base = "#1e1e2e"
+bg = "#1e1e2e"
+mantle = "#181825"
+crust = "#11111b"
+text = "#cdd6f4"
+fg = "#cdd6f4"
+cyan = "#89dceb"
+sky = "#89dceb"
+sapphire = "#74c7ec"
+blue = "#89b4fa"
+purple = "#cba6f7"
+mauve = "#cba6f7"
+magenta = "#f5c2e7"
+pink = "#f5c2e7"
+lavender = "#b4befe"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+red = "#f38ba8"
+orange = "#fab387"
+peach = "#fab387"
+rosewater = "#f5e0dc"
+flamingo = "#f2cdcd"
+maroon = "#eba0ac"
+teal = "#94e2d5"
+subtext = "#6c7086"
+subtext0 = "#a6adc8"
+subtext1 = "#bac2de"
+overlay0 = "#6c7086"
+overlay1 = "#7f849c"
+overlay2 = "#9399b2"
+surface1 = "#45475a"
+surface2 = "#585b70"
+
+# ------------------------------------------------------------------------------
+# 2. Tokyo Night (Night & Moon)
+# ------------------------------------------------------------------------------
+[palettes.tokyo_night_night]
+surface0 = "#16161e"
+surface = "#16161e"
+base = "#1a1b26"
+bg = "#1a1b26"
+mantle = "#16161e"
+crust = "#13141c"
+text = "#c0caf5"
+fg = "#c0caf5"
+cyan = "#7dcfff"
+sky = "#7dcfff"
+sapphire = "#7aa2f7"
+blue = "#7aa2f7"
+purple = "#bb9af7"
+mauve = "#bb9af7"
+magenta = "#bb9af7"
+pink = "#f7768e"
+lavender = "#b4f9f8"
+green = "#9ece6a"
+yellow = "#e0af68"
+red = "#f7768e"
+orange = "#ff9e64"
+peach = "#ff9e64"
+subtext = "#565f89"
+subtext0 = "#565f89"
+
+[palettes.tokyo_night_moon]
+surface0 = "#1e2030"
+surface = "#1e2030"
+base = "#222436"
+bg = "#222436"
+mantle = "#1e2030"
+crust = "#191a2a"
+text = "#c8d3f5"
+fg = "#c8d3f5"
+cyan = "#86e1fc"
+sky = "#86e1fc"
+sapphire = "#82aaff"
+blue = "#82aaff"
+purple = "#fca7ea"
+mauve = "#c099ff"
+magenta = "#c099ff"
+pink = "#ff757f"
+lavender = "#b4f9f8"
+green = "#c3e88d"
+yellow = "#ffc777"
+red = "#ff757f"
+orange = "#ff966c"
+peach = "#ff966c"
+subtext = "#828bb8"
+subtext0 = "#828bb8"
+
+# ------------------------------------------------------------------------------
+# 3. Cyberdream (High-contrast Cyberpunk)
+# ------------------------------------------------------------------------------
+[palettes.cyberdream]
+surface0 = "#1e2124"
+surface = "#1e2124"
+base = "#16181a"
+bg = "#16181a"
+mantle = "#121415"
+crust = "#0e1011"
+text = "#ffffff"
+fg = "#ffffff"
+cyan = "#5ef1ff"
+sky = "#5ef1ff"
+sapphire = "#5ea1ff"
+blue = "#5ea1ff"
+purple = "#bd5eff"
+mauve = "#bd5eff"
+magenta = "#ff5ea0"
+pink = "#ff5ea0"
+lavender = "#bd5eff"
+green = "#5eff6c"
+yellow = "#f1ff5e"
+red = "#ff6e5e"
+orange = "#ffbd5e"
+peach = "#ffbd5e"
+subtext = "#7b8496"
+subtext0 = "#7b8496"
+
+# ------------------------------------------------------------------------------
+# 4. Poimandres (Cold Sci-Fi Minimalist)
+# ------------------------------------------------------------------------------
+[palettes.poimandres]
+surface0 = "#252b37"
+surface = "#252b37"
+base = "#1b1e28"
+bg = "#1b1e28"
+mantle = "#171922"
+crust = "#13151d"
+text = "#e4f0fb"
+fg = "#e4f0fb"
+cyan = "#89ddff"
+sky = "#89ddff"
+sapphire = "#add7ff"
+blue = "#add7ff"
+purple = "#f087bd"
+mauve = "#f087bd"
+magenta = "#d0679d"
+pink = "#d0679d"
+lavender = "#add7ff"
+green = "#5de4c7"
+yellow = "#fffac2"
+red = "#d0679d"
+orange = "#5de4c7"
+peach = "#5de4c7"
+subtext = "#7390aa"
+subtext0 = "#7390aa"

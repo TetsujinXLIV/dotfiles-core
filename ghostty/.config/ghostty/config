@@ -1,0 +1,67 @@
+# ==============================================================================
+# Ghostty Terminal Configuration
+# Stowed to: ~/.config/ghostty/config
+# Theme & Aesthetics matching Catppuccin Mocha / Universal Theme
+# ==============================================================================
+
+# --- Color Scheme & Theme ---
+theme = TokyoNight Night
+
+# --- Typography & Font Features ---
+font-family = "FiraCode Nerd Font Mono"
+font-size = 10
+font-feature = "calt"
+font-feature = "liga"
+font-feature = "zero"
+
+# --- Window Appearance & Geometry ---
+window-decoration = true
+background-opacity = 0.95
+background-blur-radius = 20
+window-width = 175
+window-height = 50
+window-padding-x = 6
+window-padding-y = 6
+window-padding-balance = true
+window-inherit-working-directory = true
+
+# --- Tabs & Navigation ---
+window-show-tab-bar = always
+gtk-tabs-location = top
+gtk-wide-tabs = false
+tab-inherit-working-directory = true
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+w=close_tab:this
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+keybind = alt+1=goto_tab:1
+keybind = alt+2=goto_tab:2
+keybind = alt+3=goto_tab:3
+keybind = alt+4=goto_tab:4
+keybind = alt+5=goto_tab:5
+
+# --- Cursor Customization ---
+cursor-style = block
+cursor-style-blink = true
+
+# --- Mouse & Clipboard ---
+mouse-hide-while-typing = true
+copy-on-select = clipboard
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = true
+clipboard-paste-bracketed-safe = true
+keybind = ctrl+shift+c=copy_to_clipboard:mixed
+keybind = ctrl+shift+v=paste_from_clipboard
+
+# --- Shell & Command ---
+command = /usr/bin/bash
+
+# --- Shell Integration & Features ---
+shell-integration = none
+
+# --- GTK / Wayland / Linux Platform Tweaks ---
+gtk-titlebar = false
+gtk-single-instance = true
+desktop-notifications = true
