@@ -14,6 +14,7 @@ DISTRO="unknown"
 IS_UPGRADE=false
 PRUNE_EXTENSIONS=false
 WITH_BLESH=false
+HEADLESS=false
 POSITIONAL_ARGS=()
 
 # --- Sudo Helper for Automation / Non-interactive Runs ---
@@ -31,7 +32,7 @@ init_sudo() {
   fi
 }
 
-# --- Detect OS & Session Environment ---
+# --- Detect OS ---
 detect_os() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
     IS_MACOS=true
@@ -49,19 +50,13 @@ detect_os() {
   echo "Detected OS: $DISTRO"
 }
 
-is_ssh_session() {
-  if [ -n "${SSH_CLIENT-}" ] || [ -n "${SSH_TTY-}" ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
 # --- Ensure Homebrew on macOS ---
 ensure_homebrew() {
   if [ "$IS_MACOS" = true ]; then
     echo "=================================================="
     echo "🍺 Checking Homebrew environment..."
+    export HOMEBREW_NO_ANALYTICS=1
+
     if [ -x "/opt/homebrew/bin/brew" ]; then
       eval "$(/opt/homebrew/bin/brew shellenv)"
     elif [ -x "/usr/local/bin/brew" ]; then
@@ -76,6 +71,10 @@ ensure_homebrew() {
       elif [ -x "/usr/local/bin/brew" ]; then
         eval "$(/usr/local/bin/brew shellenv)"
       fi
+    fi
+
+    if command -v brew &>/dev/null; then
+      brew analytics off 2>/dev/null || true
     fi
   fi
 }
@@ -99,7 +98,7 @@ install_base_packages() {
   echo "📦 Checking and installing base CLI packages..."
 
   if [ "$IS_MACOS" = true ]; then
-    brew install git curl stow tmux ripgrep fzf
+    brew install git curl stow tmux ripgrep fzf bash
   elif [ "$IS_DEBIAN" = true ]; then
     run_sudo apt-get update
     run_sudo apt-get install -y git curl stow tmux ripgrep fzf build-essential xclip wl-clipboard
@@ -171,14 +170,11 @@ install_neovim() {
   local ARCH
   ARCH="$(uname -m)"
   local TARBALL_SUFFIX=""
-  local EXTRACTED_DIR=""
 
   if [ "$ARCH" == "x86_64" ]; then
     TARBALL_SUFFIX="-x86_64"
-    EXTRACTED_DIR="nvim-linux-x86_64"
   elif [ "$ARCH" == "aarch64" ]; then
     TARBALL_SUFFIX="-arm64"
-    EXTRACTED_DIR="nvim-linux-arm64"
   else
     echo "Architecture $ARCH not directly supported for pre-built Neovim. Falling back to apt..."
     if [ "$IS_DEBIAN" = true ]; then run_sudo apt-get install -y neovim; fi
@@ -192,11 +188,20 @@ install_neovim() {
 
   if [ -n "$LATEST_URL" ]; then
     curl -fsSL -o "/tmp/${TARBALL_NAME}" "$LATEST_URL"
-    tar -xzf "/tmp/${TARBALL_NAME}" -C /tmp
-    run_sudo rm -rf /opt/nvim
-    run_sudo mv "/tmp/${EXTRACTED_DIR}" /opt/nvim
-    rm -f "/tmp/${TARBALL_NAME}"
-    echo "✅ Neovim installed to /opt/nvim"
+    local TEMP_EXTRACT_DIR
+    TEMP_EXTRACT_DIR="$(mktemp -d)"
+    tar -xzf "/tmp/${TARBALL_NAME}" -C "$TEMP_EXTRACT_DIR"
+    local EXTRACTED_DIR
+    EXTRACTED_DIR="$(find "$TEMP_EXTRACT_DIR" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+
+    if [ -n "$EXTRACTED_DIR" ] && [ -d "$EXTRACTED_DIR" ]; then
+      run_sudo rm -rf /opt/nvim
+      run_sudo mv "$EXTRACTED_DIR" /opt/nvim
+      echo "✅ Neovim installed to /opt/nvim"
+    else
+      echo "⚠️ Could not locate extracted Neovim directory in $TEMP_EXTRACT_DIR"
+    fi
+    rm -rf "$TEMP_EXTRACT_DIR" "/tmp/${TARBALL_NAME}"
   else
     echo "⚠️ Could not download Neovim pre-built binary. Falling back to apt."
     if [ "$IS_DEBIAN" = true ]; then run_sudo apt-get install -y neovim; fi
@@ -377,14 +382,20 @@ install_vscode() {
     echo "✅ VS Code macOS symlink bridge active."
   elif [ "$IS_DEBIAN" = true ]; then
     if ! command -v code &>/dev/null; then
-      echo "Configuring Microsoft VS Code apt repository..."
-      run_sudo apt-get install -y wget gpg apt-transport-https
-      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/packages.microsoft.gpg
-      run_sudo install -D -o root -g root -m 644 /tmp/packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
-      run_sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-      rm -f /tmp/packages.microsoft.gpg
+      echo "Checking existing apt repositories for code..."
       run_sudo apt-get update
-      run_sudo apt-get install -y code
+      if run_sudo apt-get install -y code 2>/dev/null; then
+        echo "✅ Installed Visual Studio Code from existing repository."
+      else
+        echo "Visual Studio Code not found in existing repositories. Configuring Microsoft apt repository..."
+        run_sudo apt-get install -y wget gpg apt-transport-https
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/packages.microsoft.gpg
+        run_sudo install -D -o root -g root -m 644 /tmp/packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+        run_sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+        rm -f /tmp/packages.microsoft.gpg
+        run_sudo apt-get update
+        run_sudo apt-get install -y code
+      fi
     else
       echo "Visual Studio Code is already installed."
     fi
@@ -484,6 +495,22 @@ stow_packages() {
       echo "  ⚠️ Warning: Package '$pkg' not found in $DOTFILES_DIR. Skipping."
     fi
   done
+
+  # Check if stow adopt modified any tracked files in the repo
+  if [ -d "$DOTFILES_DIR/.git" ] && command -v git &>/dev/null; then
+    local MODIFIED_TRACKED
+    MODIFIED_TRACKED=$(git -C "$DOTFILES_DIR" status --porcelain 2>/dev/null | grep -E '^[ M]M|^ M|^M ' || true)
+    if [ -n "$MODIFIED_TRACKED" ]; then
+      echo "=================================================="
+      echo "⚠️  WARNING: stow adopt modified tracked files in the repository with pre-existing local files:"
+      git -C "$DOTFILES_DIR" status --short
+      echo ""
+      echo "💡 Run 'git -C \"$DOTFILES_DIR\" diff' to inspect changes."
+      echo "💡 If you wish to discard local adoptions and restore repository defaults:"
+      echo "   git -C \"$DOTFILES_DIR\" checkout -- ."
+      echo "=================================================="
+    fi
+  fi
 }
 
 # --- Shell Startup Integration ---
@@ -513,6 +540,11 @@ update_shell() {
 
   # macOS login shell setup
   if [ "$IS_MACOS" = true ]; then
+    local NO_ANALYTICS='export HOMEBREW_NO_ANALYTICS=1'
+    if ! grep -q "HOMEBREW_NO_ANALYTICS" "$BASHRC" 2>/dev/null; then
+      echo -e "\n# Disable Homebrew analytics\n$NO_ANALYTICS" >> "$BASHRC"
+    fi
+
     local BASH_PROFILE="$HOME/.bash_profile"
     local PROFILE_SOURCE='[[ -f ~/.bashrc ]] && . ~/.bashrc'
     if [ ! -f "$BASH_PROFILE" ] || ! grep -qF "$PROFILE_SOURCE" "$BASH_PROFILE" 2>/dev/null; then
@@ -540,6 +572,7 @@ Usage: ./sync_core.sh [options] [package1 package2 ...]
 
 Options:
   -u, --upgrade         Upgrade system packages, Neovim, and plugins
+  --headless            Skip desktop GUI applications (Ghostty and VS Code) for servers
   --prune-extensions    Uninstall VS Code extensions not listed in extensions.list
   --with-blesh          Install ble.sh (Bash Line Editor) for enhanced history search
   -h, --help            Show this help message
@@ -555,6 +588,10 @@ parse_args() {
     case "$1" in
       -u|--upgrade)
         IS_UPGRADE=true
+        shift
+        ;;
+      --headless|--no-gui|--skip-gui)
+        HEADLESS=true
         shift
         ;;
       --prune-extensions)
@@ -603,12 +640,12 @@ main() {
     install_blesh
   fi
 
-  if is_ssh_session; then
+  if [ "$HEADLESS" = true ]; then
     echo "=================================================="
-    echo "🌐 Remote SSH session detected. Skipping desktop GUI installations."
+    echo "🖥️  Headless mode active (--headless). Skipping desktop GUI applications (Ghostty & VS Code)."
   else
     echo "=================================================="
-    echo "🖥️  Local session detected. Setting up desktop applications..."
+    echo "🖥️  Desktop session. Setting up applications..."
     install_ghostty
     install_vscode
   fi

@@ -32,6 +32,9 @@ cd ~/dotfiles-core
 # Upgrade system packages, Neovim release binary, and plugins
 ./sync_core.sh -u
 
+# Run on headless/server machines (skips Ghostty & VS Code desktop apps)
+./sync_core.sh --headless
+
 # Install ble.sh (Bash Line Editor) for enhanced history search
 ./sync_core.sh --with-blesh
 
