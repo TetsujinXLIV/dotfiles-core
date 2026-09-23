@@ -221,36 +221,7 @@ subtext = "#828bb8"
 subtext0 = "#828bb8"
 
 # ------------------------------------------------------------------------------
-# 3. Cyberdream (High-contrast Cyberpunk)
-# ------------------------------------------------------------------------------
-[palettes.cyberdream]
-surface0 = "#1e2124"
-surface = "#1e2124"
-base = "#16181a"
-bg = "#16181a"
-mantle = "#121415"
-crust = "#0e1011"
-text = "#ffffff"
-fg = "#ffffff"
-cyan = "#5ef1ff"
-sky = "#5ef1ff"
-sapphire = "#5ea1ff"
-blue = "#5ea1ff"
-purple = "#bd5eff"
-mauve = "#bd5eff"
-magenta = "#ff5ea0"
-pink = "#ff5ea0"
-lavender = "#bd5eff"
-green = "#5eff6c"
-yellow = "#f1ff5e"
-red = "#ff6e5e"
-orange = "#ffbd5e"
-peach = "#ffbd5e"
-subtext = "#7b8496"
-subtext0 = "#7b8496"
-
-# ------------------------------------------------------------------------------
-# 4. Poimandres (Cold Sci-Fi Minimalist)
+# 3. Poimandres (Cold Sci-Fi Minimalist)
 # ------------------------------------------------------------------------------
 [palettes.poimandres]
 surface0 = "#252b37"

@@ -3,8 +3,7 @@
 catppuccin.catppuccin-vsc
 catppuccin.catppuccin-vsc-icons
 enkia.tokyo-night
-scottmckendry.cyberdream
-drcika.poimandres
+pmndrs.pmndrs
 oderwat.indent-rainbow
 royaction.color-manager
 
@@ -23,19 +22,12 @@ esbenp.prettier-vscode
 foxundermoon.shell-format
 
 # Remote Development
-# For remote development via SSH and containers.
+# For remote development via SSH.
 ms-vscode-remote.remote-ssh
-ms-vscode-remote.remote-containers
 ms-vscode.remote-explorer
-
-# Containers & Docker
-# For Docker and container development.
-docker.docker
-ms-azuretools.vscode-docker
 
 # Productivity & Tools
 # For general productivity tools and utilities.
-gruntfuggly.todo-tree
 usernamehw.errorlens
 
 # Language Support
@@ -45,4 +37,5 @@ tamasfe.even-better-toml
 
 # AI
 Google.google-antigravity
-ZooCodeOrganization.zoo-code
+# ZooCodeOrganization.zoo-code
+# Continue.continue

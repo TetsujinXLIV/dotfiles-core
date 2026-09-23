@@ -56,7 +56,9 @@ keybind = ctrl+shift+c=copy_to_clipboard:mixed
 keybind = ctrl+shift+v=paste_from_clipboard
 
 # --- Shell & Command ---
-command = /usr/bin/bash
+# Omit 'command' so Ghostty defaults to launching the user's login shell ($SHELL)
+# across Linux and macOS.
+# command = /usr/bin/bash
 
 # --- Shell Integration & Features ---
 shell-integration = none
