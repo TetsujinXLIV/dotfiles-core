@@ -1,0 +1,14 @@
+# ==============================================================================
+# ble.sh User Configuration
+# Location: ~/dotfiles/blesh/.blerc -> ~/.blerc
+# ==============================================================================
+
+# Disable automatic command hinting, ghost text, and auto-completion popups
+bleopt complete_auto_complete=
+bleopt complete_auto_history=
+bleopt complete_auto_menu=
+
+# Retain syntax highlighting and enhanced reverse history search
+bleopt highlight_syntax=1
+bleopt history_share=1
+

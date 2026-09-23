@@ -5,9 +5,9 @@ workstations, laptops, and remote servers. Managed using GNU Stow.
 
 This repository contains core configurations for:
 
-- **Ghostty**: Terminal emulator with native tabs and clipboard integration.
+- **Ghostty**: Terminal emulator with native tabs, clipboard integration, and
+  `xterm-256color` compatibility.
 - **Neovim**: Modern Neovim configuration using native 0.12 `vim.pack`.
-- **Starship**: Cross-shell prompt with semantic color palettes.
 - **Tmux**: Terminal multiplexer with Vim copy mode and OSC 52 clipboard.
 - **VS Code**: Editor settings, keybindings, and extension manifests.
 
@@ -15,9 +15,7 @@ This repository contains core configurations for:
 
 ## 🚀 Quick Start
 
-### 1. macOS (Work Laptop)
-
-On macOS, Ghostty, VS Code, and Starship are linked automatically.
+Run the declarative sync script on macOS or Debian/Ubuntu:
 
 ```bash
 # 1. Clone the repository
@@ -28,32 +26,45 @@ cd ~/dotfiles-core
 ./sync_core.sh
 ```
 
-- **Homebrew**: Automatically installs `stow`, `starship`, `ripgrep`, and `fzf`.
-- **VS Code**: Links `settings.json` and `keybindings.json` to
+### Script Options
+
+```bash
+# Upgrade system packages, Neovim release binary, and plugins
+./sync_core.sh -u
+
+# Install ble.sh (Bash Line Editor) for enhanced history search
+./sync_core.sh --with-blesh
+
+# Reconcile VS Code extensions and prune unlisted ones
+./sync_core.sh --prune-extensions
+
+# Stow only specific packages
+./sync_core.sh nvim tmux
+```
+
+### 1. macOS (Work Laptop)
+
+- **Homebrew**: Automatically ensures Homebrew and base packages (`git`, `stow`,
+  `tmux`, `ripgrep`, `fzf`).
+- **VS Code**: Installs Visual Studio Code and links `settings.json`,
+  `keybindings.json`, and snippets to
   `~/Library/Application Support/Code/User/`.
-- **Ghostty**: Configures native tab navigation and clipboard integration.
+- **Ghostty**: Installs Ghostty and configures native tab navigation and
+  clipboard integration.
 
 ---
 
 ### 2. Debian & Ubuntu (Workstation & Remote SSH)
 
-On Debian/Ubuntu machines, Neovim, Tmux, and Starship are prioritized for
-terminal and remote SSH workflows.
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/<your-username>/dotfiles-core.git ~/dotfiles-core
-cd ~/dotfiles-core
-
-# 2. Run the declarative sync script
-./sync_core.sh
-```
-
-- **Neovim Plugins**: Native `vim.pack` initializes automatically on first run.
+- **Neovim 0.12**: Automatically checks and downloads the modern pre-built
+  release binary (bypassing ancient Debian apt packages) with native `vim.pack`
+  package management.
 - **Tmux Plugins**: TPM and Catppuccin plugins are automatically cloned and
   installed.
 - **OSC 52 Clipboard**: Pressing `y` inside Tmux copy mode pipes text directly
   to your client clipboard across SSH sessions.
+- **Headless Detection**: Automatically detects SSH sessions and skips desktop
+  GUI installations (Ghostty/VS Code).
 
 ---
 
@@ -67,7 +78,6 @@ stow ghostty
 stow vscode
 stow nvim
 stow tmux
-stow starship
 
 # Unlink a package
 stow -D ghostty
