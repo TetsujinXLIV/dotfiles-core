@@ -531,8 +531,12 @@ update_shell() {
 
   # ble.sh loader in ~/.bashrc (only for interactive shells, if ble.sh is present)
   if [ -f "$HOME/.local/share/blesh/ble.sh" ]; then
-    local BLESH_LOADER='[[ $- == *i* ]] && [ -f "$HOME/.local/share/blesh/ble.sh" ] && source "$HOME/.local/share/blesh/ble.sh" --noattach'
-    if ! grep -q "blesh/ble.sh" "$BASHRC" 2>/dev/null; then
+    local BLESH_LOADER='[[ $- == *i* ]] && [ -f "$HOME/.local/share/blesh/ble.sh" ] && source "$HOME/.local/share/blesh/ble.sh"'
+    # Fix legacy --noattach loader if previously added
+    if grep -q "blesh/ble.sh.*--noattach" "$BASHRC" 2>/dev/null; then
+      sed -i.bak 's|blesh/ble.sh" --noattach|blesh/ble.sh"|' "$BASHRC" 2>/dev/null && rm -f "$BASHRC.bak" || true
+      echo "Updated ble.sh loader in ~/.bashrc (removed --noattach)"
+    elif ! grep -q "blesh/ble.sh" "$BASHRC" 2>/dev/null; then
       echo -e "\n# ble.sh initialization\n$BLESH_LOADER" >> "$BASHRC"
       echo "Added ble.sh loader to ~/.bashrc"
     fi
