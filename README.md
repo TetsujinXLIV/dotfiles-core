@@ -71,6 +71,26 @@ cd ~/dotfiles-core
 
 ---
 
+### 3. Windows 11 (Workstation & PC Builds)
+
+Run the declarative PowerShell sync script in PowerShell 7 or Windows Terminal:
+
+```powershell
+# Default: PC build & maintenance mode (apps, runtimes, benchmarks, and gaming tools only)
+.\sync_windows.ps1
+
+# Routine upgrade of all installed Winget applications on a PC build
+.\sync_windows.ps1 -Upgrade
+
+# Workstation developer setup (installs Git, Neovim, VS Code, OpenSSH, and links dotfiles)
+.\sync_windows.ps1 -Dev
+
+# Full workstation upgrade (pulls repo, upgrades Winget apps, and updates Neovim plugins)
+.\sync_windows.ps1 -Dev -Upgrade
+```
+
+---
+
 ## 📦 Modular Package Management (GNU Stow)
 
 You can selectively link or unlink individual packages at any time:
