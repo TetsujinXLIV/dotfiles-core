@@ -17,7 +17,7 @@ font-feature = "zero"
 # --- Window Appearance & Geometry ---
 window-decoration = true
 background-opacity = 0.95
-background-blur-radius = 20
+background-blur = 20
 window-width = 175
 window-height = 50
 window-padding-x = 6

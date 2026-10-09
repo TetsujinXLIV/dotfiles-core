@@ -11,6 +11,7 @@
   "terminal.integrated.fontFamily": "FiraMono NF",
   "terminal.integrated.customGlyphs": true,
   "terminal.integrated.defaultProfile.linux": "bash",
+  "css.validate": false,
 
   // --------------------------------------------------------------------------
   // GENERAL EDITOR SETTINGS
@@ -194,5 +195,7 @@
   "zoo-code.debug": false,
   "zoo-code.allowedCommands": ["git log", "git diff", "git show"],
   "zoo-code.deniedCommands": [],
-  "zoo-code.autoImportSettingsPath": "~/.config/zoo-code/settings.json"
+  "zoo-code.autoImportSettingsPath": "~/.config/zoo-code/settings.json",
+  "chat.titleBar.signIn.enabled": false,
+  "chat.titleBar.openInAgentsWindow.enabled": false
 }
