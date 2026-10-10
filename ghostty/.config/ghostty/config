@@ -55,7 +55,10 @@ clipboard-paste-bracketed-safe = true
 keybind = ctrl+shift+c=copy_to_clipboard:mixed
 keybind = ctrl+shift+v=paste_from_clipboard
 
-# --- Shell & Command ---
+# --- Shell & Terminal Emulation ---
+# Force TERM to xterm-256color for universal compatibility across all remote SSH hosts
+env = TERM=xterm-256color
+
 # Omit 'command' so Ghostty defaults to launching the user's login shell ($SHELL)
 # across Linux and macOS.
 # command = /usr/bin/bash
