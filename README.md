@@ -48,7 +48,7 @@ cd ~/dotfiles-core
 ### 1. macOS (Work Laptop)
 
 - **Homebrew**: Automatically ensures Homebrew and base packages (`git`, `stow`,
-  `tmux`, `ripgrep`, `fzf`).
+  `tmux`, `ripgrep`, `fzf`, `ffmpeg`).
 - **VS Code**: Installs Visual Studio Code and links `settings.json`,
   `keybindings.json`, and snippets to
   `~/Library/Application Support/Code/User/`.

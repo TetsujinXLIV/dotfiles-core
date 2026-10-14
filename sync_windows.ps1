@@ -236,6 +236,7 @@ if (-not $SkipApps) {
     Install-WingetApp -Id "7zip.7zip" -Name "7-Zip"
     Install-WingetApp -Id "Malwarebytes.Malwarebytes" -Name "Malwarebytes"
     Install-WingetApp -Id "VideoLAN.VLC" -Name "VLC Media Player"
+    Install-WingetApp -Id "Gyan.FFmpeg" -Name "FFmpeg"
 
     # 4.3 Browsers & Comms
     Write-Host "`n[+] Ensuring Browsers & Comms..." -ForegroundColor Cyan

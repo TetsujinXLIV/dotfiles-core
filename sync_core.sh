@@ -98,10 +98,10 @@ install_base_packages() {
   echo "📦 Checking and installing base CLI packages..."
 
   if [ "$IS_MACOS" = true ]; then
-    brew install git curl stow tmux ripgrep fzf bash
+    brew install git curl stow tmux ripgrep fzf bash ffmpeg
   elif [ "$IS_DEBIAN" = true ]; then
     run_sudo apt-get update
-    run_sudo apt-get install -y git curl stow tmux ripgrep fzf build-essential xclip wl-clipboard
+    run_sudo apt-get install -y git curl stow tmux ripgrep fzf build-essential xclip wl-clipboard ffmpeg
   fi
 }
 
