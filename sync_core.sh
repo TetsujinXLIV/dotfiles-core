@@ -32,6 +32,15 @@ init_sudo() {
   fi
 }
 
+# --- Check SSH Session ---
+is_ssh_session() {
+  if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 # --- Detect OS ---
 detect_os() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -404,6 +413,27 @@ install_vscode() {
   reconcile_vscode_extensions
 }
 
+install_vlc() {
+  echo "=================================================="
+  echo "🎥 Checking VLC Media Player..."
+
+  if [ "$IS_MACOS" = true ]; then
+    if [ -d "/Applications/VLC.app" ] || command -v vlc &>/dev/null; then
+      echo "VLC Media Player is already installed."
+      return 0
+    fi
+    echo "Installing VLC via Homebrew Cask..."
+    brew install --cask vlc || true
+  elif [ "$IS_DEBIAN" = true ]; then
+    if command -v vlc &>/dev/null; then
+      echo "VLC Media Player is already installed."
+      return 0
+    fi
+    run_sudo apt-get update
+    run_sudo apt-get install -y vlc
+  fi
+}
+
 # --- Tmux & TPM ---
 install_tmux_plugins() {
   echo "=================================================="
@@ -644,14 +674,15 @@ main() {
     install_blesh
   fi
 
-  if [ "$HEADLESS" = true ]; then
+  if [ "$HEADLESS" = true ] || is_ssh_session; then
     echo "=================================================="
-    echo "🖥️  Headless mode active (--headless). Skipping desktop GUI applications (Ghostty & VS Code)."
+    echo "🖥️  Headless mode active (SSH session or --headless). Skipping desktop GUI applications."
   else
     echo "=================================================="
     echo "🖥️  Desktop session. Setting up applications..."
     install_ghostty
     install_vscode
+    install_vlc
   fi
 
   update_shell

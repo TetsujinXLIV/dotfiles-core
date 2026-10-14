@@ -52,8 +52,8 @@ cd ~/dotfiles-core
 - **VS Code**: Installs Visual Studio Code and links `settings.json`,
   `keybindings.json`, and snippets to
   `~/Library/Application Support/Code/User/`.
-- **Ghostty**: Installs Ghostty and configures native tab navigation and
-  clipboard integration.
+- **Ghostty & VLC**: Installs Ghostty and VLC Media Player, and configures native
+  tab navigation and clipboard integration.
 
 ---
 
@@ -67,7 +67,7 @@ cd ~/dotfiles-core
 - **OSC 52 Clipboard**: Pressing `y` inside Tmux copy mode pipes text directly
   to your client clipboard across SSH sessions.
 - **Headless Detection**: Automatically detects SSH sessions and skips desktop
-  GUI installations (Ghostty/VS Code).
+  GUI installations (Ghostty, VS Code, VLC).
 
 ---
 
