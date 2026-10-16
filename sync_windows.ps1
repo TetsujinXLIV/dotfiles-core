@@ -6,14 +6,15 @@ Idempotent Windows environment sync script for PC builds, apps, gaming tools, an
 Bootstraps and synchronizes a Windows 11 machine:
 - By default: Installs and upgrades user GUI apps, gaming clients, GPU tools, benchmarks, and runtimes via Winget.
   Designed specifically for friends/family PC builds and gaming desktops.
-- With '-Dev': Also installs developer CLI tools (Git, PowerShell 7, Neovim, Starship, Fastfetch, VS Code, 1Password),
-  configures Windows OpenSSH Server default shell, links dotfiles configurations, and updates Neovim plugins.
+- With '-Dev': Also installs developer CLI tools (Git, PowerShell 7 MSI, Neovim, Starship, Fastfetch, VS Code, 1Password),
+  configures Windows OpenSSH Server default shell safely to 64-bit PowerShell 7 (pwsh) and self-heals authorized_keys ACLs,
+  links dotfiles configurations, unblocks execution policies across all PowerShell editions, and updates Neovim plugins.
 
 .PARAMETER Upgrade
 Runs a full system upgrade on all installed Winget applications (and Neovim plugins if -Dev is specified).
 
 .PARAMETER Dev
-Enables developer tools (Git, Neovim, VS Code, Starship, Fastfetch, PowerShell 7, 1Password), OpenSSH Server
+Enables developer tools (Git, Neovim, VS Code, Starship, Fastfetch, PowerShell 7 MSI, 1Password), OpenSSH Server
 configuration, and dotfiles linking.
 
 .PARAMETER SkipApps
@@ -23,7 +24,7 @@ Skips package installation and upgrades via Winget; useful when only configuring
 Explicitly synchronizes dotfiles configurations without requiring full developer tools installation.
 
 .PARAMETER OpenSSH
-Explicitly configures OpenSSH Server default shell without requiring full developer tools installation.
+Explicitly configures OpenSSH Server default shell and authorized_keys ACLs without requiring full developer tools installation.
 
 .PARAMETER Force
 Forces recreation of directory junctions and configuration links.
@@ -59,15 +60,26 @@ if ($IncludeDev) {
 Write-Host "========================================================" -ForegroundColor Cyan
 
 # -----------------------------------------------------------------------------
-# 1. Administrator Elevation Check
+# 1. Administrator, 64-Bit Host, & Non-MSIX Elevation Check
 # -----------------------------------------------------------------------------
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$is64BitProcess = [Environment]::Is64BitProcess
+$currentProcessPath = (Get-Process -Id $PID).Path
+$isMsixPwsh = $currentProcessPath -like "*WindowsApps*"
 
-if (-not $isAdmin) {
-    Write-Host "[!] Administrator privileges are required to configure system apps, runtimes, and settings." -ForegroundColor Yellow
-    Write-Host "[*] Relaunching in an elevated PowerShell session..." -ForegroundColor Yellow
+if (-not $isAdmin -or -not $is64BitProcess -or $isMsixPwsh) {
+    Write-Host "[!] 64-bit Administrator privileges (outside MSIX WindowsApps) are required to configure system apps, runtimes, and settings." -ForegroundColor Yellow
+    Write-Host "[*] Relaunching in an elevated 64-bit PowerShell session..." -ForegroundColor Yellow
 
-    $currentExe = (Get-Process -Id $PID).Path
+    $stdPwsh = "C:\Program Files\PowerShell\7\pwsh.exe"
+    if (Test-Path $stdPwsh) {
+        $targetExe = $stdPwsh
+    } elseif (-not $is64BitProcess -and (Test-Path "$env:WinDir\Sysnative\WindowsPowerShell\v1.0\powershell.exe")) {
+        $targetExe = "$env:WinDir\Sysnative\WindowsPowerShell\v1.0\powershell.exe"
+    } else {
+        $targetExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+    }
+
     $argList = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$PSCommandPath`"")
     if ($Upgrade) { $argList += "-Upgrade" }
     if ($SkipApps) { $argList += "-SkipApps" }
@@ -76,7 +88,7 @@ if (-not $isAdmin) {
     if ($OpenSSH) { $argList += "-OpenSSH" }
     if ($Force) { $argList += "-Force" }
 
-    Start-Process -FilePath $currentExe -ArgumentList $argList -Verb RunAs
+    Start-Process -FilePath $targetExe -ArgumentList $argList -Verb RunAs
     exit
 }
 
@@ -96,10 +108,12 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
 function Install-WingetApp {
     param(
         [Parameter(Mandatory = $true)][string]$Id,
-        [Parameter(Mandatory = $true)][string]$Name
+        [Parameter(Mandatory = $true)][string]$Name,
+        [string[]]$ExtraArgs = @()
     )
     Write-Host "--> Checking / Installing $Name ($Id)..." -ForegroundColor Gray
-    $output = & winget install -e --id $Id --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1
+    $wingetArgs = @("install", "-e", "--id", $Id, "--source", "winget", "--accept-source-agreements", "--accept-package-agreements", "--silent") + $ExtraArgs
+    $output = & winget @wingetArgs 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "    [OK] $Name is installed." -ForegroundColor Green
     } elseif ($LASTEXITCODE -eq -1978335189 -or $LASTEXITCODE -eq -1978335215) {
@@ -208,6 +222,15 @@ function Ensure-FileLink {
 # 4. Package Installation & Upgrades
 # -----------------------------------------------------------------------------
 if (-not $SkipApps) {
+    if ($IncludeDev) {
+        # Remove any MSIX (WindowsApps) PowerShell 7 package so Winget never uses versioned paths
+        $msixPwsh = Get-AppxPackage -Name "Microsoft.PowerShell" -ErrorAction SilentlyContinue
+        if ($msixPwsh) {
+            Write-Host "`n[!] Removing MSIX Store edition of PowerShell 7 in favor of stable MSI edition..." -ForegroundColor Yellow
+            $msixPwsh | Remove-AppxPackage -ErrorAction SilentlyContinue
+        }
+    }
+
     if ($Upgrade) {
         if ($IncludeDev -and (Get-Command git -ErrorAction SilentlyContinue)) {
             Write-Host "`n[+] Pulling latest repository updates..." -ForegroundColor Cyan
@@ -220,7 +243,17 @@ if (-not $SkipApps) {
     # 4.1 Developer CLI & Shell Packages (Installed only when -Dev is specified)
     if ($IncludeDev) {
         Write-Host "`n[+] Ensuring Developer CLI & Shell Packages..." -ForegroundColor Cyan
-        Install-WingetApp -Id "Microsoft.PowerShell" -Name "PowerShell 7"
+        # Force MSI (wix) installer for PowerShell 7 so C:\Program Files\PowerShell\7\pwsh.exe is always used
+        if (-not (Test-Path "C:\Program Files\PowerShell\7\pwsh.exe")) {
+            Install-WingetApp -Id "Microsoft.PowerShell" -Name "PowerShell 7 (MSI)" -ExtraArgs @("--installer-type", "wix", "--scope", "machine", "--architecture", "x64", "--force")
+        } elseif ($Upgrade) {
+            Write-Host "--> Checking / Upgrading PowerShell 7 (MSI)..." -ForegroundColor Gray
+            & winget upgrade -e --id Microsoft.PowerShell --source winget --installer-type wix --scope machine --architecture x64 --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-Null
+            Write-Host "    [OK] PowerShell 7 (MSI) is up to date." -ForegroundColor Green
+        } else {
+            Write-Host "    [OK] PowerShell 7 (MSI) is installed at C:\Program Files\PowerShell\7\pwsh.exe." -ForegroundColor Green
+        }
+
         Install-WingetApp -Id "Git.Git" -Name "Git for Windows"
         Install-WingetApp -Id "Neovim.Neovim" -Name "Neovim"
         Install-WingetApp -Id "Starship.Starship" -Name "Starship Prompt"
@@ -278,44 +311,65 @@ if (-not $SkipApps) {
 }
 
 # -----------------------------------------------------------------------------
-# 5. OpenSSH Server Default Shell Configuration (Only when -Dev or -OpenSSH)
+# 5. OpenSSH Server Default Shell & Authorized Keys Self-Healing (Only when -Dev or -OpenSSH)
 # -----------------------------------------------------------------------------
 if ($IncludeOpenSSH) {
-    Write-Host "`n[+] Configuring OpenSSH Server default shell..." -ForegroundColor Cyan
+    Write-Host "`n[+] Configuring OpenSSH Server default shell & keys..." -ForegroundColor Cyan
 
-    $pwshCmd = Get-Command pwsh.exe -ErrorAction SilentlyContinue
-    $pwshCandidate = $null
-    if ($pwshCmd) {
-        $pwshCandidate = $pwshCmd.Source
-    }
-    if (-not $pwshCandidate) {
-        $stdPwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-        if (Test-Path $stdPwsh) {
-            $pwshCandidate = $stdPwsh
-        }
-    }
+    # Strictly use stable 64-bit Program Files path (never use versioned WindowsApps paths)
+    $stdPwsh = "C:\Program Files\PowerShell\7\pwsh.exe"
+    $ps5Fallback = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
-    if ($pwshCandidate -and (Test-Path $pwshCandidate)) {
-        Write-Host "Targeting PowerShell 7: $pwshCandidate" -ForegroundColor Gray
-        if (-not (Test-Path "HKLM:\SOFTWARE\OpenSSH")) {
-            New-Item -Path "HKLM:\SOFTWARE\OpenSSH" -Force | Out-Null
-        }
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name "DefaultShell" -Value $pwshCandidate -Force
-        Write-Host "    [OK] OpenSSH DefaultShell set to PowerShell 7." -ForegroundColor Green
+    if (Test-Path $stdPwsh) {
+        $targetShell = $stdPwsh
+        Write-Host "    [OK] Targeting PowerShell 7 (MSI): $targetShell" -ForegroundColor Green
     } else {
-        $ps5Candidate = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-        if (-not (Test-Path "HKLM:\SOFTWARE\OpenSSH")) {
-            New-Item -Path "HKLM:\SOFTWARE\OpenSSH" -Force | Out-Null
+        $targetShell = $ps5Fallback
+        Write-Host "    [WARN] $stdPwsh not found; falling back safely to Windows PowerShell 5.1" -ForegroundColor Yellow
+    }
+
+    # Always write to the 64-bit registry view (/reg:64) so sshd sees the exact path
+    & reg.exe add "HKLM\SOFTWARE\OpenSSH" /v DefaultShell /t REG_SZ /d "$targetShell" /f /reg:64 | Out-Null
+
+    # Self-heal authorized_keys across both ProgramData and User .ssh with clean UTF-8 (no BOM) and strict ACLs
+    $adminKeyFile = "C:\ProgramData\ssh\administrators_authorized_keys"
+    $userSshDir   = Join-Path $HOME ".ssh"
+    $userKeyFile  = Join-Path $userSshDir "authorized_keys"
+    $repoKeyFile  = Join-Path $DOTFILES_DIR "ssh\authorized_keys"
+
+    $sourceKeyFile = $null
+    if (Test-Path $repoKeyFile) {
+        $sourceKeyFile = $repoKeyFile
+    } elseif (Test-Path $adminKeyFile) {
+        $sourceKeyFile = $adminKeyFile
+    } elseif (Test-Path $userKeyFile) {
+        $sourceKeyFile = $userKeyFile
+    }
+
+    if ($sourceKeyFile) {
+        [string[]]$rawKeys = @(Get-Content $sourceKeyFile | Where-Object { $_.Trim() -ne "" })
+        if ($rawKeys.Count -gt 0) {
+            $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+
+            if (Test-Path "C:\ProgramData\ssh") {
+                [System.IO.File]::WriteAllLines($adminKeyFile, $rawKeys, $utf8NoBom)
+                & icacls.exe $adminKeyFile /reset | Out-Null
+                & icacls.exe $adminKeyFile /inheritance:r /grant "*S-1-5-32-544:F" /grant "*S-1-5-18:F" | Out-Null
+            }
+
+            New-Item -ItemType Directory -Path $userSshDir -Force | Out-Null
+            [System.IO.File]::WriteAllLines($userKeyFile, $rawKeys, $utf8NoBom)
+            & icacls.exe $userKeyFile /reset | Out-Null
+            & icacls.exe $userKeyFile /inheritance:r /grant "$($env:USERNAME):(R,W)" /grant "*S-1-5-32-544:F" /grant "*S-1-5-18:F" | Out-Null
+            Write-Host "    [OK] Synchronized SSH authorized_keys (UTF-8 no BOM) and enforced strict ACLs." -ForegroundColor Green
         }
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name "DefaultShell" -Value $ps5Candidate -Force
-        Write-Host "    [OK] OpenSSH DefaultShell set to Windows PowerShell 5.1 (pwsh not found)." -ForegroundColor Yellow
     }
 
     $sshService = Get-Service -Name "sshd" -ErrorAction SilentlyContinue
     if ($sshService) {
         Set-Service -Name "sshd" -StartupType Automatic
         Restart-Service -Name "sshd" -Force -ErrorAction SilentlyContinue
-        Write-Host "    [OK] Refreshed sshd service with updated system environment." -ForegroundColor Green
+        Write-Host "    [OK] Refreshed sshd service." -ForegroundColor Green
     }
 }
 
@@ -382,8 +436,12 @@ if ($IncludeDotfiles) {
         }
     }
 
-    # Ensure execution policy allows running user profile
+    # Ensure ExecutionPolicy is RemoteSigned across PowerShell 7, 64-bit PS 5.1, and 32-bit PS 5.1
     Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force -ErrorAction SilentlyContinue
+    Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy RemoteSigned -Force -ErrorAction SilentlyContinue
+    & reg.exe add "HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" /v ExecutionPolicy /t REG_SZ /d "RemoteSigned" /f /reg:64 | Out-Null
+    & reg.exe add "HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell" /v ExecutionPolicy /t REG_SZ /d "RemoteSigned" /f /reg:32 | Out-Null
+    Write-Host "    [OK] ExecutionPolicy set to RemoteSigned across all PowerShell editions." -ForegroundColor Green
 
     # 6.5 Optional Configurations (Linked only if present in repo)
     $fastfetchSource = Join-Path $DOTFILES_DIR "fastfetch\.config\fastfetch"
