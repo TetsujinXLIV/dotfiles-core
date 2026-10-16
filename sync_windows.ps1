@@ -111,14 +111,24 @@ function Install-WingetApp {
         [Parameter(Mandatory = $true)][string]$Name,
         [string[]]$ExtraArgs = @()
     )
-    Write-Host "--> Checking / Installing $Name ($Id)..." -ForegroundColor Gray
+    Write-Host "--> Checking $Name ($Id)..." -ForegroundColor Gray
+
+    # Fast check if already installed (avoids re-running Squirrel/GUI installers like Discord)
+    if ($ExtraArgs -notcontains "--force") {
+        & winget list -e --id $Id --accept-source-agreements >$null 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "    [OK] $Name is already installed." -ForegroundColor Green
+            return
+        }
+    }
+
+    Write-Host "    [*] Installing $Name ($Id)..." -ForegroundColor Cyan
+    # Do NOT capture output with '$output = & winget ... 2>&1' because GUI/Squirrel installers
+    # (like Discord) spawn background tray processes that inherit the pipe and hang PowerShell forever.
     $wingetArgs = @("install", "-e", "--id", $Id, "--source", "winget", "--accept-source-agreements", "--accept-package-agreements", "--silent") + $ExtraArgs
-    $output = & winget @wingetArgs 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    & winget @wingetArgs
+    if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq -1978335189 -or $LASTEXITCODE -eq -1978335215) {
         Write-Host "    [OK] $Name is installed." -ForegroundColor Green
-    } elseif ($LASTEXITCODE -eq -1978335189 -or $LASTEXITCODE -eq -1978335215) {
-        # Already installed or no update available
-        Write-Host "    [OK] $Name is already installed." -ForegroundColor Green
     } else {
         Write-Host "    [WARN] Winget returned code $LASTEXITCODE for $Id" -ForegroundColor Yellow
     }
@@ -227,7 +237,11 @@ if (-not $SkipApps) {
         $msixPwsh = Get-AppxPackage -Name "Microsoft.PowerShell" -ErrorAction SilentlyContinue
         if ($msixPwsh) {
             Write-Host "`n[!] Removing MSIX Store edition of PowerShell 7 in favor of stable MSI edition..." -ForegroundColor Yellow
+            $oldProgress = $ProgressPreference
+            $ProgressPreference = "SilentlyContinue"
             $msixPwsh | Remove-AppxPackage -ErrorAction SilentlyContinue
+            Write-Progress -Activity "Removing MSIX PowerShell" -Completed
+            $ProgressPreference = $oldProgress
         }
     }
 
@@ -248,7 +262,7 @@ if (-not $SkipApps) {
             Install-WingetApp -Id "Microsoft.PowerShell" -Name "PowerShell 7 (MSI)" -ExtraArgs @("--installer-type", "wix", "--scope", "machine", "--architecture", "x64", "--force")
         } elseif ($Upgrade) {
             Write-Host "--> Checking / Upgrading PowerShell 7 (MSI)..." -ForegroundColor Gray
-            & winget upgrade -e --id Microsoft.PowerShell --source winget --installer-type wix --scope machine --architecture x64 --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-Null
+            & winget upgrade -e --id Microsoft.PowerShell --source winget --installer-type wix --scope machine --architecture x64 --accept-source-agreements --accept-package-agreements --silent
             Write-Host "    [OK] PowerShell 7 (MSI) is up to date." -ForegroundColor Green
         } else {
             Write-Host "    [OK] PowerShell 7 (MSI) is installed at C:\Program Files\PowerShell\7\pwsh.exe." -ForegroundColor Green
