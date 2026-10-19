@@ -5,8 +5,17 @@
 if ($global:__DOTFILES_PROFILE_INITIALIZED) { return }
 $global:__DOTFILES_PROFILE_INITIALIZED = $true
 
+# Skip interactive profile (Fastfetch, Starship, Console encoding) during
+# non-interactive SSH commands, SCP, SFTP, and redirected pipes.
+$cmdLineArgs = [Environment]::GetCommandLineArgs() | Select-Object -Skip 1
+if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected -or ($cmdLineArgs -match '^-(c|command|encodedcommand|ec|e|file|f|noni|noninteractive)$')) {
+    return
+}
+
 # 1. Enforce UTF-8 Encoding
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+} catch {}
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # 2. Starship Prompt Initialization
