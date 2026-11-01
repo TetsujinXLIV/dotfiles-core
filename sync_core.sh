@@ -107,10 +107,10 @@ install_base_packages() {
   echo "📦 Checking and installing base CLI packages..."
 
   if [ "$IS_MACOS" = true ]; then
-    brew install git curl stow tmux ripgrep fzf bash ffmpeg
+    brew install git curl stow tmux ripgrep fzf bash ffmpeg uv
   elif [ "$IS_DEBIAN" = true ]; then
     run_sudo apt-get update
-    run_sudo apt-get install -y git curl stow tmux ripgrep fzf build-essential xclip wl-clipboard ffmpeg
+    run_sudo apt-get install -y git curl stow tmux ripgrep fzf build-essential xclip wl-clipboard ffmpeg python3 python3-rich
   fi
 }
 
@@ -543,6 +543,31 @@ stow_packages() {
   fi
 }
 
+# --- Portable CLI Utilities (~/.local/bin) ---
+install_cli_utilities() {
+  if [ -f "$DOTFILES_DIR/scripts/ventoy_updater.py" ]; then
+    echo "=================================================="
+    echo "💾 Installing Ventoy CLI launcher (~/.local/bin/ventoy)..."
+    mkdir -p "$HOME/.local/bin"
+    chmod +x "$DOTFILES_DIR/scripts/ventoy_updater.py"
+    cat << EOF > "$HOME/.local/bin/ventoy"
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_PATH="$DOTFILES_DIR/scripts/ventoy_updater.py"
+if command -v uv &>/dev/null; then
+  exec uv run --script "\$SCRIPT_PATH" "\$@"
+elif python3 -c "import rich" &>/dev/null; then
+  exec python3 "\$SCRIPT_PATH" "\$@"
+else
+  echo "Error: 'ventoy' requires 'uv' or Python 'rich' (run ./sync_core.sh)." >&2
+  exit 1
+fi
+EOF
+    chmod +x "$HOME/.local/bin/ventoy"
+    echo "✅ Installed ~/.local/bin/ventoy"
+  fi
+}
+
 # --- Shell Startup Integration ---
 update_shell() {
   echo "=================================================="
@@ -669,6 +694,7 @@ main() {
   stow_packages "${POSITIONAL_ARGS[@]}"
   sync_neovim_plugins
   install_tmux_plugins
+  install_cli_utilities
 
   if [ "$WITH_BLESH" = true ] || [ -d "$DOTFILES_DIR/blesh" ]; then
     install_blesh

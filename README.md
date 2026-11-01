@@ -10,6 +10,8 @@ This repository contains core configurations for:
 - **Neovim**: Modern Neovim configuration using native 0.12 `vim.pack`.
 - **Tmux**: Terminal multiplexer with Vim copy mode and OSC 52 clipboard.
 - **VS Code**: Editor settings, keybindings, and extension manifests.
+- **Ventoy CLI (`ventoy`)**: Cross-platform bootable USB ISO/IMG & bootloader
+  updater (`~/.local/bin/ventoy`).
 
 ---
 
@@ -52,8 +54,8 @@ cd ~/dotfiles-core
 - **VS Code**: Installs Visual Studio Code and links `settings.json`,
   `keybindings.json`, and snippets to
   `~/Library/Application Support/Code/User/`.
-- **Ghostty & VLC**: Installs Ghostty and VLC Media Player, and configures native
-  tab navigation and clipboard integration.
+- **Ghostty & VLC**: Installs Ghostty and VLC Media Player, and configures
+  native tab navigation and clipboard integration.
 
 ---
 
@@ -134,6 +136,17 @@ stow -R nvim
 - Uses native `vim.pack` package management.
 - Leader key: `Space`
 - File tree, fuzzy finder, LSP integrations, and true-color themes.
+
+### Ventoy Bootable USB Manager (`ventoy`)
+
+- Installed automatically to `~/.local/bin/ventoy` via `./sync_core.sh`.
+- `ventoy` / `ventoy --check`: Scans mounted Ventoy drives (`/Volumes/Ventoy` on
+  macOS or `/run/media/$USER/Ventoy` on Linux), checks the `VTOYEFI` bootloader
+  version, verifies SHA256 checksums, and updates outdated OS ISOs 1-by-1.
+- `ventoy add` / `ventoy list --all --live`: Downloads supported Linux, Proxmox,
+  TrueNAS SCALE, Bazzite, and SteamOS recovery images directly onto `ISOs/`.
+- `ventoy upgrade`: Non-destructively updates the Ventoy bootloader (`-u`) on
+  Linux while leaving Partition 1 data untouched (or `--livecd` on macOS).
 
 ---
 

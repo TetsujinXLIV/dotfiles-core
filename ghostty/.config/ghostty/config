@@ -9,7 +9,8 @@ theme = TokyoNight Night
 
 # --- Typography & Font Features ---
 font-family = "FiraCode Nerd Font Mono"
-font-size = 10
+font-size = 12
+font-thicken = true
 font-feature = "calt"
 font-feature = "liga"
 font-feature = "zero"

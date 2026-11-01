@@ -12,3 +12,15 @@ bleopt complete_auto_menu=
 bleopt highlight_syntax=1
 bleopt history_share=1
 
+# Treat Shift+Space as normal Space so fast typing after shifted symbols
+# (e.g., "| " or "&& ") never drops the first space under CSI u / modifyOtherKeys
+function blerc/define-keymap-bindings {
+  ble-bind -k 'ESC [ 3 2 ; 2 u' SP
+  ble-bind -k 'CSI 3 2 ; 2 u' SP
+  ble-bind -k 'ESC [ 2 7 ; 2 ; 3 2 ~' SP
+  ble-bind -k 'CSI 2 7 ; 2 ; 3 2 ~' SP
+  ble-bind -f 'S-SP' magic-space
+}
+blehook/eval-after-load keymap blerc/define-keymap-bindings
+
+

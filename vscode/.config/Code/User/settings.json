@@ -31,7 +31,7 @@
   "git.ignoredRepositories": [
     "**/.claude-code/**",
     "**/.codex/**",
-    "**/.gemini/**"
+    "**/.gemini/**",
   ],
 
   // --------------------------------------------------------------------------
@@ -39,10 +39,10 @@
   // Settings related to file management, workspace trust, and the overall
   // workbench behavior on startup.
   // --------------------------------------------------------------------------
-  "files.autoSave": "afterDelay",
+  "files.autoSave": "off",
   "files.associations": {
     "Makefile.*": "makefile",
-    "*.jsonc": "jsonc"
+    "*.jsonc": "jsonc",
   },
   "explorer.fileNesting.patterns": {
     "*.ts": "${capture}.js",
@@ -56,7 +56,7 @@
     "*.sqlite3": "${capture}.${extname}-*",
     "*.db3": "${capture}.${extname}-*",
     "*.sdb": "${capture}.${extname}-*",
-    "*.s3db": "${capture}.${extname}-*"
+    "*.s3db": "${capture}.${extname}-*",
   },
   "security.workspace.trust.untrustedFiles": "open",
   "workbench.startupEditor": "none",
@@ -89,46 +89,46 @@
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit",
-      "source.fixAll": "explicit"
-    }
+      "source.fixAll": "explicit",
+    },
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format",
     "editor.tabSize": 2,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.tabSize": 2,
     "editor.wordWrap": "on",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[dockerfile]": {
     "editor.defaultFormatter": "foxundermoon.shell-format",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[dockercompose]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   // --------------------------------------------------------------------------
   // PYTHON TOOLING
@@ -153,7 +153,7 @@
     "properties",
     "spring-boot-properties",
     "azcli",
-    "bats"
+    "bats",
   ],
   "bashBeautify.tabSize": 2,
 
@@ -171,7 +171,7 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "extensions.experimental.affinity": {
-    "asvetliakov.vscode-neovim": 1
+    "asvetliakov.vscode-neovim": 1,
   },
 
   // --------------------------------------------------------------------------
@@ -182,11 +182,11 @@
   "workbench.settings.applyToAllProfiles": [],
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   // Disable copilot garbage
   "github.copilot.enable": {
-    "*": false
+    "*": false,
   },
   "remote.SSH.experimental.chat": false,
   "explorer.confirmDelete": false,
@@ -197,5 +197,5 @@
   "zoo-code.deniedCommands": [],
   "zoo-code.autoImportSettingsPath": "~/.config/zoo-code/settings.json",
   "chat.titleBar.signIn.enabled": false,
-  "chat.titleBar.openInAgentsWindow.enabled": false
+  "chat.titleBar.openInAgentsWindow.enabled": false,
 }
