@@ -237,7 +237,23 @@ install_firacode_nerd_font() {
   echo "=================================================="
   echo "🔤 Checking Fira Code Nerd Font..."
   if [ "$IS_MACOS" = true ]; then
-    brew install --cask font-fira-code-nerd-font 2>/dev/null || brew install font-fira-code-nerd-font 2>/dev/null || true
+    if [ -f "$HOME/Library/Fonts/FiraCodeNerdFont-Regular.ttf" ] || [ -f "/Library/Fonts/FiraCodeNerdFont-Regular.ttf" ]; then
+      echo "✅ Fira Code Nerd Font is already installed on macOS."
+      return 0
+    fi
+    brew install --cask font-fira-code-nerd-font || true
+    if [ ! -f "$HOME/Library/Fonts/FiraCodeNerdFont-Regular.ttf" ] && [ ! -f "/Library/Fonts/FiraCodeNerdFont-Regular.ttf" ]; then
+      local MAC_FONT_URL
+      MAC_FONT_URL=$(curl -s --connect-timeout 5 "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest" 2>/dev/null | grep 'browser_download_url' | cut -d '"' -f 4 | grep 'FiraCode.zip' | head -n 1) || true
+      if [ -n "$MAC_FONT_URL" ]; then
+        curl -fsSL -o /tmp/FiraCode.zip "$MAC_FONT_URL"
+        mkdir -p /tmp/FiraCode "$HOME/Library/Fonts"
+        unzip -qo /tmp/FiraCode.zip -d /tmp/FiraCode
+        cp /tmp/FiraCode/*.ttf "$HOME/Library/Fonts/" 2>/dev/null || true
+        rm -rf /tmp/FiraCode /tmp/FiraCode.zip
+        echo "✅ Installed Fira Code Nerd Font into ~/Library/Fonts."
+      fi
+    fi
     return 0
   fi
 
