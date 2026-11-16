@@ -450,6 +450,20 @@ install_vlc() {
   fi
 }
 
+install_rectangle() {
+  echo "=================================================="
+  echo "🪟 Checking Rectangle window manager..."
+
+  if [ "$IS_MACOS" = true ]; then
+    if [ -d "/Applications/Rectangle.app" ] || [ -d "$HOME/Applications/Rectangle.app" ] || command -v rectangle &>/dev/null; then
+      echo "Rectangle is already installed."
+      return 0
+    fi
+    echo "Installing Rectangle via Homebrew Cask..."
+    brew install --cask rectangle || true
+  fi
+}
+
 # --- Tmux & TPM ---
 install_tmux_plugins() {
   echo "=================================================="
@@ -725,6 +739,7 @@ main() {
     install_ghostty
     install_vscode
     install_vlc
+    install_rectangle
   fi
 
   update_shell
